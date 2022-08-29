@@ -72,6 +72,7 @@ casas_vendidas_acum = np.insert(casas_vendidas_acum, 0, 0)
 casas_vendidas_acum = np.delete(casas_vendidas_acum, casas_vendidas_acum.size - 1)
 
 df_casas_no_vendidas = df_casas - df_casas_vendidas
+casas_no_vendidas_col = np.array(df_casas_no_vendidas.agg('sum'))
 df_enganches_no_utilizados = df_porcentajes_enganches.mul(df_casas_no_vendidas)
 df_enganches_no_utilizados *= sup_valor
 
@@ -96,27 +97,35 @@ enganches_recibidos = np.round(enganches_recibidos, 0)
 
 empty = ['', '', '', '', '']
 
-filas = ['Year', 'Contratos Realizados', 'Casas Arrendadas', 'Casas Vendidas', 'Ingresos', 'Comisiones Rentas', 'Comisiones Ventas', 'Rentas', 'Enganches', 'Gastos', 'Rentas Pagadas', 'Compensaciones', 'Enganches Devueltos', 'Totales']
+filas = ['Year', 'Contratos Realizados', 'Casas Arrendadas', 'Casas Vendidas', 'Casas No Vendidas', 'Ingresos', 'Comisiones Rentas', 'Comisiones Ventas', 'Rentas', 'Enganches', 'Gastos', 'Rentas Pagadas', 'Compensaciones', 'Enganches Devueltos', 'Totales']
 
-data = [years, contratos, casas_arrendadas, casas_vendidas_col, empty, comisiones_rentas, comisiones_ventas, rentas, enganches_recibidos, empty, rentas, compensaciones, enganches_devueltos, empty]
+data = [years, contratos, casas_arrendadas, casas_vendidas_col, casas_no_vendidas_col, empty, comisiones_rentas, comisiones_ventas, rentas, enganches_recibidos, empty, rentas, compensaciones, enganches_devueltos, empty]
 
 df = pd.DataFrame(data=data, index = filas)
 
-df_ingresos_totales = pd.DataFrame(df.loc[['Comisiones Rentas', 'Comisiones Ventas', 'Enganches']].sum(axis=0))
+df_ingresos_totales = pd.DataFrame(df.loc[['Comisiones Rentas', 'Comisiones Ventas', 'Rentas', 'Enganches']].sum(axis=0))
 df_gastos_totales = pd.DataFrame(df.loc[['Rentas Pagadas', 'Compensaciones', 'Enganches Devueltos']].sum(axis=0))
+df_total = df_ingresos_totales.sub(df_gastos_totales)
 
-df_totales = df_ingresos_totales - df_gastos_totales
+df_ingresos_totales = df_ingresos_totales.T
+df_ingresos_totales = df_ingresos_totales.rename(index={0: 'Ingresos Totales'})
+df_gastos_totales = df_gastos_totales.T
+df_gastos_totales = df_gastos_totales.rename(index={0: 'Gastos Totales'})
+df_total = df_total.T
+df_total = df_total.rename(index={0: 'Total'})
 
-df = pd.concat([df, df_ingresos_totales.T])
-df = pd.concat([df, df_gastos_totales.T])
-df = pd.concat([df, df_totales.T])
-df = df.rename(index={0: 'Ingresos Totales', 1: 'Gastos Totales', 2: 'Total'})
+
+totales = [df_ingresos_totales, df_gastos_totales, df_total]
+df_totales = pd.concat(totales)
+df = pd.concat([df, df_totales])
+df = df.round(0)
+
+# df = df.rename(index={0: 'Ingresos Totales', 'Gastos Totales', 'Total'})
 
 print(df)
 
 breakpoint()
-with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-    display(df)
+
 
 
 
