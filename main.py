@@ -6,18 +6,18 @@ from babel.numbers import format_currency
 
 years = [2023, 2024, 2025, 2026, 2027]
 
-sup_crecimiento = np.array([1, 0.30, 0.20, 0.20, 0.10])
-sup_contratos = 100
-sup_impagos = 0.30
+sup_crecimiento = np.array([1, 0.05, 0.05, 0, 0])
+sup_contratos = 10
+sup_impagos = 0.50
 sup_valor = 1000000
 sup_aprobacion = 0.75
-sup_rentabilidad = 0.05
+sup_rentabilidad = 0.09
 sup_enganche = 0.10
 sup_plazo = 3
 
 """random.randint(1, 200)"""
 
-comision_rentas = 0.02
+comision_rentas = sup_rentabilidad * 0.5
 comision_ventas = 0.01
 porcentaje_devolucion_enganche = 0.4
 porcentaje_compensacion = 0.5
@@ -67,7 +67,8 @@ df_enganches *= sup_valor
 enganches_utilizados = np.array(df_enganches.agg('sum'))
 enganches_utilizados = np.round(enganches_utilizados, 0)
 
-casas_vendidas_acum = np.array(cumsum(casas_vendidas_col))
+casas_col = np.array(df_casas.agg('sum'))
+casas_vendidas_acum = np.array(cumsum(casas_col))
 casas_vendidas_acum = np.insert(casas_vendidas_acum, 0, 0)
 casas_vendidas_acum = np.delete(casas_vendidas_acum, casas_vendidas_acum.size - 1)
 
@@ -82,6 +83,7 @@ compensaciones = enganches_no_utilizados * porcentaje_compensacion
 
 casas_arrendadas = cumsum(contratos) - casas_vendidas_acum
 rentas = sup_rentabilidad * casas_arrendadas * sup_valor
+rentas_cobradas = rentas * (1 - sup_impagos)
 
 
 comisiones_rentas = casas_arrendadas * comision_rentas * sup_valor
@@ -97,13 +99,13 @@ enganches_recibidos = np.round(enganches_recibidos, 0)
 
 empty = ['', '', '', '', '']
 
-filas = ['Year', 'Contratos Realizados', 'Casas Arrendadas', 'Casas Vendidas', 'Casas No Vendidas', 'Ingresos', 'Comisiones Rentas', 'Comisiones Ventas', 'Rentas', 'Enganches', 'Gastos', 'Rentas Pagadas', 'Compensaciones', 'Enganches Devueltos', 'Totales']
+filas = ['Year', 'Contratos Realizados', 'Casas Arrendadas', 'Casas Vendidas', 'Casas No Vendidas', 'Ingresos', 'Comisiones Rentas', 'Comisiones Ventas', 'Rentas Cobradas', 'Enganches', 'Gastos', 'Rentas Pagadas', 'Compensaciones', 'Enganches Devueltos', 'Totales']
 
-data = [years, contratos, casas_arrendadas, casas_vendidas_col, casas_no_vendidas_col, empty, comisiones_rentas, comisiones_ventas, rentas, enganches_recibidos, empty, rentas, compensaciones, enganches_devueltos, empty]
+data = [years, contratos, casas_arrendadas, casas_vendidas_col, casas_no_vendidas_col, empty, comisiones_rentas, comisiones_ventas, rentas_cobradas, enganches_recibidos, empty, rentas, compensaciones, enganches_devueltos, empty]
 
 df = pd.DataFrame(data=data, index = filas)
 
-df_ingresos_totales = pd.DataFrame(df.loc[['Comisiones Rentas', 'Comisiones Ventas', 'Rentas', 'Enganches']].sum(axis=0))
+df_ingresos_totales = pd.DataFrame(df.loc[['Comisiones Rentas', 'Comisiones Ventas', 'Rentas Cobradas', 'Enganches']].sum(axis=0))
 df_gastos_totales = pd.DataFrame(df.loc[['Rentas Pagadas', 'Compensaciones', 'Enganches Devueltos']].sum(axis=0))
 df_total = df_ingresos_totales.sub(df_gastos_totales)
 
