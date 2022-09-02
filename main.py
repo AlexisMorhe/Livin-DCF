@@ -7,13 +7,13 @@ from babel.numbers import format_currency
 years = [2023, 2024, 2025, 2026, 2027]
 
 sup_crecimiento = np.array([1, 0.05, 0.05, 0, 0])
-sup_contratos = 10
-sup_impagos = 0.50
-sup_valor = 1000000
-sup_aprobacion = 0.75
-sup_rentabilidad = 0.09
-sup_enganche = 0.10
-sup_plazo = 3
+sup_contratos = random.randint(1, 200)
+sup_impagos = random.randint(1, 50) / 100
+sup_valor = random.randint(500000, 4000000)
+sup_aprobacion = random.randint(1, 100) / 100
+sup_rentabilidad = random.randint(1, 10) / 100
+sup_enganche = random.randint(1, 25) /100
+sup_plazo = random.randint(1, 5)
 
 """random.randint(1, 200)"""
 
@@ -123,6 +123,13 @@ df = pd.concat([df, df_totales])
 df = df.round(0)
 
 # df = df.rename(index={0: 'Ingresos Totales', 'Gastos Totales', 'Total'})
+
+print('Plazo utilizado :{}'.format(sup_plazo))
+print('Las tasas de crecimiento usadas son: {}'.format(sup_crecimiento))
+print('La rentabilidad deseada por el dueño de la casa es de: {}'.format(sup_rentabilidad))
+print('El valor promedio de las casas (sin contar ajustes por inflación) es de: {}'.format(sup_valor))
+print('El enganche promedio deseado por los arrendatarios es de: {}'.format(sup_enganche))
+print('El porcentaje de aprobación de hipotecas es de: {}'.format(sup_aprobacion))
 
 print(df)
 
